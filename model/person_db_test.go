@@ -1,22 +1,12 @@
 package model
 
 import (
-	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	"godb/dbutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"testing"
-	"time"
-)
-
-const (
-	user     = "postgres"
-	password = "admin"
-	database = "postgres"
-	port = "5432/tcp"
 )
 
 type PersonDbTestSuite struct {
@@ -25,49 +15,22 @@ type PersonDbTestSuite struct {
 }
 
 func (suite *PersonDbTestSuite) SetupTest() {
-	ctx := context.Background()
-	req := testcontainers.ContainerRequest{
-		Image:        "postgres:latest",
-		ExposedPorts: []string{port},
-		Env: map[string]string{
-			"POSTGRES_PASSWORD": password,
-			"POSTGRES_USER":     user,
-			"POSTGRES_ATABASE":  database,
-		},
-		WaitingFor: wait.ForLog("database system is ready to accept connections").
-			WithPollInterval(100 * time.Millisecond),
-	}
-	pg, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		suite.T().Error(err)
-	}
-	time.Sleep(500 * time.Millisecond)
-	mappedPort, err := pg.MappedPort(ctx, port)
-	if err != nil {
-		suite.T().Error(err)
-	}
-	host, err := pg.Host(ctx)
+	conf := dbutil.NewDbConf(
+		"postgres",
+		"admin",
+		"postgres",
+		5432,
+		"postgres",
+	)
+	EmbeddedPostgres(suite.T(), conf)
+	db, err := gorm.Open(postgres.Open(conf.String()), &gorm.Config{})
 	if err != nil {
 		suite.T().Error(err)
 	}
 	suite.T().Cleanup(func() {
-		_ = pg.Terminate(ctx)
+		sqlDb, _ := db.DB()
+		_ = sqlDb.Close()
 	})
-	conf := NewDbConf(
-		user,
-		password,
-		"postgres",
-		host,
-		mappedPort.Int(),
-		database,
-	)
-	db, err := gorm.Open(postgres.Open(conf.Dsn()), &gorm.Config{})
-	if err != nil {
-		suite.T().Error(err)
-	}
 	suite.db = db
 }
 

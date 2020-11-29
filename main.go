@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"godb/dbutil"
 	"godb/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,14 +12,14 @@ import (
 
 func main() {
 	log.Println("Start")
-	conf := model.NewDbConf(
+	conf := dbutil.NewDbConf(
 		"postgres",
 		"admin",
 		"postgres",
-		"localhost:5432",
+		5432,
 		"postgres",
-	)
-	db, err := gorm.Open(postgres.Open(conf.Dsn()), &gorm.Config{})
+	).Mapped("localhost", 5432)
+	db, err := gorm.Open(postgres.Open(conf.String()), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
