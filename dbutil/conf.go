@@ -5,36 +5,39 @@ import (
 	"net/url"
 )
 
+//DBConf holds the database configuration information.
 type DbConf struct {
 	username   string
 	password   string
 	scheme     string
 	port       int
+	database   string
 	mappedHost string
 	mappedPort int
-	database   string
 	flags      map[string][]string
 }
 
-//DbConf implements fmt.Stringer
-var _ fmt.Stringer = (*DbConf)(nil)
-
-func (c *DbConf) Port() int {
-	return c.port
-}
-
+//Database getter
 func (c *DbConf) Database() string {
 	return c.database
 }
 
-func (c *DbConf) Username() string {
-	return c.username
+//Port getter
+func (c *DbConf) Port() int {
+	return c.port
 }
 
+//Password getter
 func (c *DbConf) Password() string {
 	return c.password
 }
 
+//Username getter
+func (c *DbConf) Username() string {
+	return c.username
+}
+
+//NewDbConf creates a new DbConf with the prerequisite information.
 func NewDbConf(username string, password string, scheme string, port int, database string) *DbConf {
 	return &DbConf{
 		username: username,
@@ -46,17 +49,20 @@ func NewDbConf(username string, password string, scheme string, port int, databa
 	}
 }
 
+//Flag adds a configuration flag to the DbConf
 func (c *DbConf) Flag(name string, value ...string) *DbConf {
 	c.flags[name] = value
 	return c
 }
 
+//Mapped adds the host and port mapped by a container.
 func (c *DbConf) Mapped(mappedHost string, mappedPort int) *DbConf {
 	c.mappedHost = mappedHost
 	c.mappedPort = mappedPort
 	return c
 }
 
+//String implements fmt.Stringer and produces a DSN format string.
 func (c *DbConf) String() string {
 	dsn := url.URL{
 		User:     url.UserPassword(c.username, c.password),
@@ -66,5 +72,4 @@ func (c *DbConf) String() string {
 		RawQuery: url.Values(c.flags).Encode(),
 	}
 	return dsn.String()
-
 }

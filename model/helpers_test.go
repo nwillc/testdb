@@ -16,9 +16,12 @@ const (
 	logMsg   = "database system is ready to accept connections"
 )
 
+//EmbeddedPostgres spins up a Postgres container.
 func EmbeddedPostgres(t *testing.T, conf *dbutil.DbConf) {
+	t.Helper()
 	ctx := context.Background()
 	natPort := fmt.Sprintf("%d/tcp", conf.Port())
+	// Configure the container
 	req := testcontainers.ContainerRequest{
 		Image:        image,
 		ExposedPorts: []string{ natPort },
@@ -31,10 +34,14 @@ func EmbeddedPostgres(t *testing.T, conf *dbutil.DbConf) {
 			WithPollInterval(100 * time.Millisecond).
 			WithOccurrence(2),
 	}
-	pg, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	// Spin up the container
+	pg, err := testcontainers.GenericContainer(
+		ctx,
+		testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
-	})
+	},
+	)
 	if err != nil {
 		t.Error(err)
 	}

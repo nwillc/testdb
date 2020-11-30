@@ -1,5 +1,6 @@
 package model
 
+//Person structure
 type Person struct {
 	ID        uint   `json:"id"`
 	FirstName string `json:"firstname"`
