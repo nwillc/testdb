@@ -29,23 +29,24 @@ import (
 	"time"
 )
 
-const (
-	image    = "postgres:12.4-alpine"
-)
+type PostgresContainerConf struct {
+	*dbutil.DbConf
+	Image string
+}
 
 //EmbeddedPostgres spins up a Postgres container.
-func EmbeddedPostgres(t *testing.T, conf *dbutil.DbConf) {
+func EmbeddedPostgres(t *testing.T, conf *PostgresContainerConf) {
 	t.Helper()
 	ctx := context.Background()
 	natPort := fmt.Sprintf("%d/tcp", conf.Port())
 	// Configure the container
 	req := testcontainers.ContainerRequest{
-		Image:        image,
-		ExposedPorts: []string{ natPort },
+		Image:        conf.Image,
+		ExposedPorts: []string{natPort},
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": conf.Password(),
 			"POSTGRES_USER":     conf.Username(),
-			"POSTGRES_DB": conf.Database(),
+			"POSTGRES_DB":       conf.Database(),
 		},
 		WaitingFor: wait.ForListeningPort(nat.Port(natPort)),
 	}
@@ -53,9 +54,9 @@ func EmbeddedPostgres(t *testing.T, conf *dbutil.DbConf) {
 	pg, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	},
+			ContainerRequest: req,
+			Started:          true,
+		},
 	)
 	if err != nil {
 		t.Error(err)

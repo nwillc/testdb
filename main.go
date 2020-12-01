@@ -44,12 +44,12 @@ func main() {
 	}
 
 	p1 := model.Person{FirstName: "John", LastName: "Doe"}
- 	p2 := model.Person{FirstName: "Jane", LastName: "Smith"}
+	p2 := model.Person{FirstName: "Jane", LastName: "Smith"}
 
- 	db.Create(&p1)
- 	db.Commit()
- 	var p3 model.Person
- 	db.Find(&p3)
+	db.Create(&p1)
+	db.Commit()
+	var p3 model.Person
+	db.Find(&p3)
 
 	fmt.Println(p1)
 	fmt.Println(p2)
