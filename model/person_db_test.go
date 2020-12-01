@@ -32,11 +32,11 @@ type PersonDbTestSuite struct {
 
 func (suite *PersonDbTestSuite) SetupTest() {
 	conf := dbutil.NewDbConf(
-		"postgres",
-		"admin",
+		"test",
+		"test",
 		"postgres",
 		5432,
-		"postgres",
+		"test",
 	)
 	// Fire up the embedded Postgres
 	EmbeddedPostgres(suite.T(), conf)

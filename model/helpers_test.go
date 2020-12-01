@@ -30,8 +30,7 @@ import (
 )
 
 const (
-	image    = "postgres:latest"
-	logMsg   = "database system is ready to accept connections"
+	image    = "postgres:12.4-alpine"
 )
 
 //EmbeddedPostgres spins up a Postgres container.
@@ -46,11 +45,9 @@ func EmbeddedPostgres(t *testing.T, conf *dbutil.DbConf) {
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": conf.Password(),
 			"POSTGRES_USER":     conf.Username(),
-			"POSTGRES_DATABASE": conf.Database(),
+			"POSTGRES_DB": conf.Database(),
 		},
-		WaitingFor: wait.ForLog(logMsg).
-			WithPollInterval(100 * time.Millisecond).
-			WithOccurrence(2),
+		WaitingFor: wait.ForListeningPort(nat.Port(natPort)),
 	}
 	// Spin up the container
 	pg, err := testcontainers.GenericContainer(
