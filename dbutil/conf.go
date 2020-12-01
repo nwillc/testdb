@@ -33,6 +33,11 @@ type DbConf struct {
 	flags      map[string][]string
 }
 
+type PostgresContainerConf struct {
+	*DbConf
+	Image string
+}
+
 //Database getter
 func (c *DbConf) Database() string {
 	return c.database

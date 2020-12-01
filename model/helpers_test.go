@@ -28,13 +28,8 @@ import (
 	"testing"
 )
 
-type PostgresContainerConf struct {
-	*dbutil.DbConf
-	Image string
-}
-
 //EmbeddedPostgres spins up a Postgres container.
-func EmbeddedPostgres(t *testing.T, conf *PostgresContainerConf) {
+func EmbeddedPostgres(t *testing.T, conf *dbutil.PostgresContainerConf) {
 	t.Helper()
 	ctx := context.Background()
 	natPort := fmt.Sprintf("%d/tcp", conf.Port())
@@ -60,7 +55,12 @@ func EmbeddedPostgres(t *testing.T, conf *PostgresContainerConf) {
 	if err != nil {
 		t.Error(err)
 	}
-	// Even after log message found Postgres needs a touch more...
+	// When test is done terminate container
+	t.Cleanup(func() {
+		_ = pg.Terminate(ctx)
+	})
+
+	// Get host and port
 	mp, err := pg.MappedPort(ctx, nat.Port(natPort))
 	if err != nil {
 		t.Error(err)
@@ -69,10 +69,5 @@ func EmbeddedPostgres(t *testing.T, conf *PostgresContainerConf) {
 	if err != nil {
 		t.Error(err)
 	}
-	// When test is done terminate container
-	t.Cleanup(func() {
-		_ = pg.Terminate(ctx)
-	})
-	// Note the containers mapped host and port
 	conf.Mapped(ma, mp.Int())
 }
