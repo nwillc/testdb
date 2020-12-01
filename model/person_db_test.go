@@ -38,17 +38,10 @@ func (suite *PersonDbTestSuite) SetupTest() {
 		5432,
 		"test",
 	)
-	containerConf := &PostgresContainerConf{
-		conf,
-		"postgres:12.4-alpine",
-	}
 	// Fire up the embedded Postgres
-	EmbeddedPostgres(suite.T(), containerConf)
+	EmbeddedPostgres(suite.T(), &PostgresContainerConf{DbConf: conf, Image: "postgres:12.4-alpine"})
 	// Open the gorm connection to it
-	db, err := gorm.Open(
-		postgres.Open(conf.String()),
-		&gorm.Config{},
-	)
+	db, err := gorm.Open(postgres.Open(conf.String()), &gorm.Config{})
 	if err != nil {
 		suite.T().Error(err)
 	}

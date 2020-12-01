@@ -26,7 +26,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"godb/dbutil"
 	"testing"
-	"time"
 )
 
 type PostgresContainerConf struct {
@@ -62,7 +61,6 @@ func EmbeddedPostgres(t *testing.T, conf *PostgresContainerConf) {
 		t.Error(err)
 	}
 	// Even after log message found Postgres needs a touch more...
-	time.Sleep(200 * time.Millisecond)
 	mp, err := pg.MappedPort(ctx, nat.Port(natPort))
 	if err != nil {
 		t.Error(err)
