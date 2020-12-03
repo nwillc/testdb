@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  progress:
+    image: postgres:12.4-alpine
+    environment:
+      POSTGRES_PASSWORD: "test"
+      POSTGRES_USER: "test"
+      POSTGRES_DB: "test"
+    ports:
+      - "10865:5432"

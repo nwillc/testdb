@@ -28,7 +28,7 @@ import (
 	"testing"
 )
 
-//EmbeddedPostgres spins up a Postgres container.
+//EmbeddedPostgres spins up a Postgres container and notes it's host and port.
 func EmbeddedPostgres(t *testing.T, conf *dbutil.PostgresContainerConf) {
 	t.Helper()
 	ctx := context.Background()

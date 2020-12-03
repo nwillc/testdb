@@ -28,13 +28,14 @@ import (
 
 func main() {
 	log.Println("Start")
+	const port = 10865
 	conf := dbutil.NewDbConf(
+		"test",
+		"test",
 		"postgres",
-		"admin",
-		"postgres",
-		5432,
-		"postgres",
-	).Mapped("localhost", 5432)
+		port,
+		"test",
+	).Mapped("localhost", port)
 	db, err := gorm.Open(postgres.Open(conf.String()), &gorm.Config{})
 	if err != nil {
 		panic(err)

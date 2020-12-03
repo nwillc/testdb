@@ -33,6 +33,15 @@ type DbConf struct {
 	flags      map[string][]string
 }
 
+func (c *DbConf) MappedPort() int {
+	return c.mappedPort
+}
+
+func (c *DbConf) MappedHost() string {
+	return c.mappedHost
+}
+
+//PostgresContainerConf adds and image name to a DbConf.
 type PostgresContainerConf struct {
 	*DbConf
 	Image string

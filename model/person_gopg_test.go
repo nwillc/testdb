@@ -12,25 +12,28 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
  */
 
 package model
 
 import (
+	"fmt"
+	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"godb/dbutil"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"testing"
 )
 
-type PersonDbTestSuite struct {
+type PersonGoPGTestSuite struct {
 	suite.Suite
-	db *gorm.DB
+	db *pg.DB
 }
 
-func (suite *PersonDbTestSuite) SetupTest() {
+func (suite *PersonGoPGTestSuite) SetupTest() {
 	conf := dbutil.NewDbConf(
 		"test",
 		"test",
@@ -40,41 +43,42 @@ func (suite *PersonDbTestSuite) SetupTest() {
 	)
 	// Fire up the embedded Postgres
 	EmbeddedPostgres(suite.T(), &dbutil.PostgresContainerConf{DbConf: conf, Image: "postgres:12.4-alpine"})
-	// Open the gorm connection to it
-	db, err := gorm.Open(postgres.Open(conf.String()), &gorm.Config{})
-	if err != nil {
-		suite.T().Error(err)
-	}
-	// Explicitly clean up gorm after the test
-	suite.T().Cleanup(func() {
-		sqlDb, _ := db.DB()
-		_ = sqlDb.Close()
+	suite.db = pg.Connect(&pg.Options{
+		Addr:     fmt.Sprintf("%s:%d", conf.MappedHost(), conf.MappedPort()),
+		User:     conf.Username(),
+		Password: conf.Password(),
+		Database: conf.Database(),
 	})
-	suite.db = db
-}
+	suite.T().Cleanup(func() {
+		_ = suite.db.Close()
+	})
 
-func TestPersonDbTestSuite(t *testing.T) {
-	suite.Run(t, new(PersonDbTestSuite))
-}
-
-func (suite *PersonDbTestSuite) TestWrite() {
-	// Use gorm's migration to set up our table
-	if err := suite.db.AutoMigrate(&Person{}); err != nil {
-		suite.T().Error(err)
+	models := []interface{}{
+		(*Person)(nil),
 	}
 
+	for _, model := range models {
+		err := suite.db.Model(model).CreateTable(&orm.CreateTableOptions{
+			Temp: true,
+		})
+		assert.NoError(suite.T(), err)
+	}
+}
+
+func TestPersonGoPGTestSuite(t *testing.T) {
+	suite.Run(t, new(PersonGoPGTestSuite))
+}
+
+func (suite *PersonGoPGTestSuite) TestWrite() {
 	// Create a person
 	p1 := Person{FirstName: "John", LastName: "Doe"}
 
-	// Persist it to database
-	suite.db.Create(&p1)
-	var p2 Person
+	_, err := suite.db.Model(&p1).Insert()
+	assert.NoError(suite.T(), err)
 
-	// Find the last Person in the database
-	suite.db.Last(&p2)
-
-	// Compare...
-	assert.Equal(suite.T(), p1.ID, p2.ID)
-	assert.Equal(suite.T(), p1.FirstName, p2.FirstName)
-	assert.Equal(suite.T(), p1.LastName, p2.LastName)
+	var people []Person
+	suite.db.Model(&people).Select()
+	assert.NoError(suite.T(), err)
+	assert.Len(suite.T(), people, 1)
+	assert.Equal(suite.T(), p1, people[0])
 }
