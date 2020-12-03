@@ -51,10 +51,8 @@ func (suite *PersonDbTestSuite) SetupTest() {
 		_ = sqlDb.Close()
 	})
 	suite.db = db
-	// Use gorm's migration to set up our table
-	if err := suite.db.AutoMigrate(&Person{}); err != nil {
-		assert.NoError(suite.T(), err)
-	}
+	err = suite.db.AutoMigrate(&Person{})
+	assert.NoError(suite.T(), err)
 }
 
 func TestPersonDbTestSuite(t *testing.T) {
@@ -67,13 +65,10 @@ func (suite *PersonDbTestSuite) TestWrite() {
 
 	// Persist it to database
 	suite.db.Create(&p1)
-	var p2 Person
 
-	// Find the last Person in the database
-	suite.db.Last(&p2)
-
-	// Compare...
-	assert.Equal(suite.T(), p1.ID, p2.ID)
-	assert.Equal(suite.T(), p1.FirstName, p2.FirstName)
-	assert.Equal(suite.T(), p1.LastName, p2.LastName)
+	// Select all
+	var people []Person
+	suite.db.Find(&people)
+	assert.Len(suite.T(), people, 1)
+	assert.Equal(suite.T(), p1, people[0])
 }

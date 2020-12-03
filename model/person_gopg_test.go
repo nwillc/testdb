@@ -43,26 +43,18 @@ func (suite *PersonGoPGTestSuite) SetupTest() {
 	)
 	// Fire up the embedded Postgres
 	EmbeddedPostgres(suite.T(), &dbutil.PostgresContainerConf{DbConf: conf, Image: "postgres:12.4-alpine"})
-	suite.db = pg.Connect(&pg.Options{
+	db := pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%d", conf.MappedHost(), conf.MappedPort()),
 		User:     conf.Username(),
 		Password: conf.Password(),
 		Database: conf.Database(),
 	})
 	suite.T().Cleanup(func() {
-		_ = suite.db.Close()
+		_ = db.Close()
 	})
-
-	models := []interface{}{
-		(*Person)(nil),
-	}
-
-	for _, model := range models {
-		err := suite.db.Model(model).CreateTable(&orm.CreateTableOptions{
-			Temp: true,
-		})
-		assert.NoError(suite.T(), err)
-	}
+	suite.db = db
+	err := suite.db.Model(&Person{}).CreateTable(&orm.CreateTableOptions{Temp: true})
+	assert.NoError(suite.T(), err)
 }
 
 func TestPersonGoPGTestSuite(t *testing.T) {
@@ -73,11 +65,13 @@ func (suite *PersonGoPGTestSuite) TestWrite() {
 	// Create a person
 	p1 := Person{FirstName: "John", LastName: "Doe"}
 
+	// Persist it to database
 	_, err := suite.db.Model(&p1).Insert()
 	assert.NoError(suite.T(), err)
 
+	// Select all
 	var people []Person
-	suite.db.Model(&people).Select()
+	err = suite.db.Model(&people).Select()
 	assert.NoError(suite.T(), err)
 	assert.Len(suite.T(), people, 1)
 	assert.Equal(suite.T(), p1, people[0])
