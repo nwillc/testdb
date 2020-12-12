@@ -21,7 +21,7 @@ import (
 	"net/url"
 )
 
-//DBConf holds the database configuration information.
+// DbConf holds the database configuration information.
 type DbConf struct {
 	username   string
 	password   string
@@ -33,41 +33,43 @@ type DbConf struct {
 	flags      map[string][]string
 }
 
+// MappedPort make the mapped port available for read
 func (c *DbConf) MappedPort() int {
 	return c.mappedPort
 }
 
+// MappedHost make the mapped host available fo read
 func (c *DbConf) MappedHost() string {
 	return c.mappedHost
 }
 
-//PostgresContainerConf adds and image name to a DbConf.
+// PostgresContainerConf adds and image name to a DbConf.
 type PostgresContainerConf struct {
 	*DbConf
 	Image string
 }
 
-//Database getter
+// Database getter
 func (c *DbConf) Database() string {
 	return c.database
 }
 
-//Port getter
+// Port getter
 func (c *DbConf) Port() int {
 	return c.port
 }
 
-//Password getter
+// Password getter
 func (c *DbConf) Password() string {
 	return c.password
 }
 
-//Username getter
+// Username getter
 func (c *DbConf) Username() string {
 	return c.username
 }
 
-//NewDbConf creates a new DbConf with the prerequisite information.
+// NewDbConf creates a new DbConf with the prerequisite information.
 func NewDbConf(username string, password string, scheme string, port int, database string) *DbConf {
 	return &DbConf{
 		username: username,
@@ -79,20 +81,20 @@ func NewDbConf(username string, password string, scheme string, port int, databa
 	}
 }
 
-//Flag adds a configuration flag to the DbConf
+// Flag adds a configuration flag to the DbConf
 func (c *DbConf) Flag(name string, value ...string) *DbConf {
 	c.flags[name] = value
 	return c
 }
 
-//Mapped adds the host and port mapped by a container.
+// Mapped adds the host and port mapped by a container.
 func (c *DbConf) Mapped(mappedHost string, mappedPort int) *DbConf {
 	c.mappedHost = mappedHost
 	c.mappedPort = mappedPort
 	return c
 }
 
-//String implements fmt.Stringer and produces a DSN format string.
+// String implements fmt.Stringer and produces a DSN format string.
 func (c *DbConf) String() string {
 	dsn := url.URL{
 		User:     url.UserPassword(c.username, c.password),

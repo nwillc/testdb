@@ -64,11 +64,13 @@ func (suite *PersonDbTestSuite) TestWrite() {
 	p1 := Person{FirstName: "John", LastName: "Doe"}
 
 	// Persist it to database
-	suite.db.Create(&p1)
+	tx := suite.db.Create(&p1)
+	assert.NoError(suite.T(), tx.Error)
 
 	// Select all
 	var people []Person
-	suite.db.Find(&people)
+	tx = suite.db.Find(&people)
+	assert.NoError(suite.T(), tx.Error)
 	assert.Len(suite.T(), people, 1)
 	assert.Equal(suite.T(), p1, people[0])
 }

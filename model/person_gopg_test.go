@@ -53,7 +53,7 @@ func (suite *PersonGoPGTestSuite) SetupTest() {
 		_ = db.Close()
 	})
 	suite.db = db
-	err := suite.db.Model(&Person{}).CreateTable(&orm.CreateTableOptions{Temp: true})
+	err := suite.db.Model(&Person{}).CreateTable(&orm.CreateTableOptions{})
 	assert.NoError(suite.T(), err)
 }
 
