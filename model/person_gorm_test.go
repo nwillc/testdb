@@ -19,7 +19,7 @@ package model
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testdb/dbutil"
+	"github.com/nwillc/testdb/dbutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"testing"

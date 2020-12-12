@@ -24,7 +24,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"testdb/dbutil"
+	"github.com/nwillc/testdb/dbutil"
 	"testing"
 )
 
