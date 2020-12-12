@@ -1,4 +1,4 @@
-module godb
+module testdb
 
 go 1.15
 

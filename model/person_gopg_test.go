@@ -24,7 +24,7 @@ import (
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"godb/dbutil"
+	"testdb/dbutil"
 	"testing"
 )
 

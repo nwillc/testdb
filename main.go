@@ -19,8 +19,8 @@ package main
 import (
 	"fmt"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"godb/dbutil"
-	"godb/model"
+	"testdb/dbutil"
+	"testdb/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
