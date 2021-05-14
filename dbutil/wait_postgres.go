@@ -81,10 +81,13 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 }
 
 func mappedPort(target wait.StrategyTarget, ctx context.Context, port nat.Port) (nat.Port, error) {
+	var rp nat.Port
+	var rerr = fmt.Errorf("failed to get mapped port")
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("panic occurred:", err)
 		}
 	}()
-	return target.MappedPort(ctx, port)
+	rp, rerr = target.MappedPort(ctx, port)
+	return rp, rerr
 }
