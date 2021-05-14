@@ -7,6 +7,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"log"
 	"time"
 )
 
@@ -42,7 +43,6 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 	var waitInterval = 100 * time.Millisecond
 
 	var port nat.Port
-	port, err = target.MappedPort(ctx, hp.Port)
 	var i = 0
 	for port == "" {
 		i++
@@ -50,7 +50,7 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 		case <-ctx.Done():
 			return fmt.Errorf("%s:%w", ctx.Err(), err)
 		case <-time.After(waitInterval):
-			port, err = target.MappedPort(ctx, hp.Port)
+			port, err = mappedPort(target, ctx, hp.Port)
 			if err != nil {
 				fmt.Printf("(%d) [%s] %s\n", i, port, err)
 			}
@@ -79,4 +79,13 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 		}
 	}
 	return nil
+}
+
+func mappedPort(target wait.StrategyTarget, ctx context.Context, port nat.Port)  (nat.Port, error) {
+	defer func() {
+        if err := recover(); err != nil {
+            log.Println("panic occurred:", err)
+        }
+    }()
+	return target.MappedPort(ctx, port)
 }
