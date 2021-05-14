@@ -22,27 +22,26 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/go-connections/nat"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"github.com/nwillc/testdb/dbutil"
+	"github.com/testcontainers/testcontainers-go"
 	"testing"
 )
 
-//EmbeddedPostgres spins up a Postgres container and notes it's host and port.
+// EmbeddedPostgres spins up a Postgres container and notes it's host and port.
 func EmbeddedPostgres(t *testing.T, conf *dbutil.PostgresContainerConf) {
 	t.Helper()
 	ctx := context.Background()
-	natPort := fmt.Sprintf("%d/tcp", conf.Port())
+	natPort := nat.Port(fmt.Sprintf("%d/tcp", conf.Port()))
 	// Configure the container
 	req := testcontainers.ContainerRequest{
 		Image:        conf.Image,
-		ExposedPorts: []string{natPort},
+		ExposedPorts: []string{string(natPort)},
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": conf.Password(),
 			"POSTGRES_USER":     conf.Username(),
 			"POSTGRES_DB":       conf.Database(),
 		},
-		WaitingFor: wait.ForListeningPort(nat.Port(natPort)),
+		WaitingFor: dbutil.NewPostgresStrategy(natPort, conf),
 	}
 	// Spin up the container
 	pg, err := testcontainers.GenericContainer(
@@ -61,7 +60,7 @@ func EmbeddedPostgres(t *testing.T, conf *dbutil.PostgresContainerConf) {
 	})
 
 	// Get host and port
-	mp, err := pg.MappedPort(ctx, nat.Port(natPort))
+	mp, err := pg.MappedPort(ctx, natPort)
 	if err != nil {
 		t.Error(err)
 	}
