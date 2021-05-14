@@ -62,7 +62,6 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 
 	var success bool
 	for !success {
-		i++
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("%s:%w", ctx.Err(), err)
@@ -81,11 +80,11 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 	return nil
 }
 
-func mappedPort(target wait.StrategyTarget, ctx context.Context, port nat.Port)  (nat.Port, error) {
+func mappedPort(target wait.StrategyTarget, ctx context.Context, port nat.Port) (nat.Port, error) {
 	defer func() {
-        if err := recover(); err != nil {
-            log.Println("panic occurred:", err)
-        }
-    }()
+		if err := recover(); err != nil {
+			log.Println("panic occurred:", err)
+		}
+	}()
 	return target.MappedPort(ctx, port)
 }
