@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/docker/go-connections/nat"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Make Postgres lib available for sql.Open
 	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
 	"time"
@@ -14,6 +14,7 @@ import (
 // Implement interface
 var _ wait.Strategy = (*PostgresStrategy)(nil)
 
+// PostgresStrategy a wait.Strategy to wait on Postgres to start.
 type PostgresStrategy struct {
 	Port           nat.Port
 	startupTimeout time.Duration
@@ -29,6 +30,7 @@ func NewPostgresStrategy(port nat.Port, dbConf *PostgresContainerConf) *Postgres
 	}
 }
 
+// WithStartupTimeout sets startupTimeout
 func (hp *PostgresStrategy) WithStartupTimeout(startupTimeout time.Duration) *PostgresStrategy {
 	hp.startupTimeout = startupTimeout
 	return hp
@@ -50,7 +52,7 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 		case <-ctx.Done():
 			return fmt.Errorf("%s:%w", ctx.Err(), err)
 		case <-time.After(waitInterval):
-			port, err = mappedPort(target, ctx, hp.Port)
+			port, err = mappedPort(ctx, target, hp.Port)
 			if err != nil {
 				fmt.Printf("(%d) [%s] %s\n", i, port, err)
 			}
@@ -80,7 +82,7 @@ func (hp *PostgresStrategy) WaitUntilReady(ctx context.Context, target wait.Stra
 	return nil
 }
 
-func mappedPort(target wait.StrategyTarget, ctx context.Context, port nat.Port) (nat.Port, error) {
+func mappedPort(ctx context.Context, target wait.StrategyTarget, port nat.Port) (nat.Port, error) {
 	var rp nat.Port
 	var rerr = fmt.Errorf("failed to get mapped port")
 	defer func() {
